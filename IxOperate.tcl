@@ -5812,6 +5812,8 @@ IxPuts -red $applyStrResult
             IxPuts -red "Get all Event counters Error"
             set retVal 1
         }
+        
+        
         while { $tmpllength > 0  } {
             set cmdx [lindex $args $idxxx]
             set argx [lindex $args [expr $idxxx + 1]] 
@@ -5829,18 +5831,19 @@ IxPuts -red $applyStrResult
                     set TempVal  [mpexpr [stat cget -framesReceived] + [stat cget -undersize] + [stat cget -oversize] +[stat cget -fragments] + [stat cget -fcsErrors]]
                     lappend FinalList $TempVal
                     lappend all_counter  rx_frames $TempVal 
-                }
-                
+                }                
                 -packet    {
                     #stat get statAllStats $Chas $Card $Port
                     set TempVal  [stat cget -framesReceived]
                     lappend FinalList $TempVal
                     lappend all_counter  rx_packet $TempVal
-                }
-                
+                }                
                 -framerate      {
                     stat getRate allStats $Chas $Card $Port
                     set TempVal [stat cget -framesReceived]
+                    if { $TempVal == 0 || $TempVal == "0"} {
+                         set TempVal  [stat cget -oversize]
+                    }
                     lappend FinalList $TempVal
                     lappend all_counter  rx_rate $TempVal  
                 }
@@ -5859,7 +5862,7 @@ IxPuts -red $applyStrResult
                     lappend all_counter  rx_byte_rate $TempVal
                 }
                 -collision {
-                    #stat get statAllStats $Chas $Card $Port
+                    stat get statAllStats $Chas $Card $Port
                     set TempVal  [stat cget -collisions]
                     lappend FinalList $TempVal
                     lappend all_counter  rx_collision $TempVal 
@@ -5900,7 +5903,7 @@ IxPuts -red $applyStrResult
                     lappend all_counter  rx_trigger_rate $TempVal
                 }
                 -crc        {
-                    #stat get statAllStats $Chas $Card $Port
+                    stat get statAllStats $Chas $Card $Port
                     set TempVal  [stat cget -fcsErrors]
                     lappend FinalList $TempVal
                     lappend all_counter  rx_crc $TempVal
@@ -5912,7 +5915,7 @@ IxPuts -red $applyStrResult
                     lappend all_counter  rx_crc_rate $TempVal 
                 }
                 -over       {
-                    #stat get statAllStats $Chas $Card $Port
+                    stat get statAllStats $Chas $Card $Port
                     set TempVal  [stat cget -oversize]
                     lappend FinalList $TempVal
                     lappend all_counter  rx_over $TempVal
@@ -6039,7 +6042,7 @@ IxPuts -red $applyStrResult
                    # stat get statAllStats $Chas $Card $Port
                     set TempVal  [stat cget -udpChecksumErrors]
                     lappend FinalList $TempVal
-                }
+                }                
                 default     {
                     set retVal 1
                     IxPuts -red "Error : cmd option $cmdx does not exist"
@@ -6051,6 +6054,7 @@ IxPuts -red $applyStrResult
         }
         
         if {$all_counter_flag==1} {
+            
             return $all_counter
         }
         return [ list $retVal $FinalList ]
